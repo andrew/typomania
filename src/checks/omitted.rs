@@ -28,7 +28,11 @@ impl Check for Omitted {
         let mut squats = Vec::new();
         let mut buf = String::new();
 
-        for i in 0..=name.len() {
+        for i in name
+            .char_indices()
+            .map(|(i, _)| i)
+            .chain(std::iter::once(name.len()))
+        {
             for c in self.alphabet.iter() {
                 util::rebuild_name_into(&mut buf, name, i, 0, c);
                 if corpus.possible_squat(&buf, name, package)? {
@@ -56,6 +60,9 @@ mod tests {
                 "axyz", "bxyz", "cxyz", "xayz", "xbyz", "xcyz", "xyaz", "xybz", "xycz", "xyza",
                 "xyzb", "xyzc",
             ],
-        )
+        )?;
+        assert_check(Omitted::new("a"), "-ۊ-", &["a-ۊ-", "-aۊ-", "-ۊa-", "-ۊ-a"])?;
+
+        Ok(())
     }
 }

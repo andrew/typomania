@@ -35,10 +35,10 @@ impl Check for Typos {
         let mut squats = Vec::new();
         let mut buf = String::new();
 
-        for (i, c) in name.chars().enumerate() {
+        for (i, c) in name.char_indices() {
             if let Some(typos) = self.typos.get(&c) {
                 for typo in typos.iter() {
-                    util::rebuild_name_into(&mut buf, name, i, 1, typo);
+                    util::rebuild_name_into(&mut buf, name, i, c.len_utf8(), typo);
                     if corpus.possible_squat(&buf, name, package)? {
                         squats.push(Squat::Typo(buf.clone()));
                     }
@@ -71,6 +71,7 @@ mod tests {
         test("x", &[])?;
         test("a", &["ab", "b"])?;
         test("xax", &["xabx", "xbx"])?;
+        test("ۊaۊ", &["ۊabۊ", "ۊbۊ"])?;
 
         Ok(())
     }
