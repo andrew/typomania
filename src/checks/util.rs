@@ -1,9 +1,22 @@
 pub(super) fn rebuild_name(orig: &str, index: usize, replace: usize, replacement: &str) -> String {
-    format!(
-        "{before}{replacement}{after}",
-        before = &orig[0..index],
-        after = orig.get(index + replace..).unwrap_or_default()
-    )
+    let mut buf = String::new();
+    rebuild_name_into(&mut buf, orig, index, replace, replacement);
+    buf
+}
+
+pub(super) fn rebuild_name_into(
+    buf: &mut String,
+    orig: &str,
+    index: usize,
+    replace: usize,
+    replacement: &str,
+) {
+    let after = orig.get(index + replace..).unwrap_or_default();
+    buf.clear();
+    buf.reserve(index + replacement.len() + after.len());
+    buf.push_str(&orig[..index]);
+    buf.push_str(replacement);
+    buf.push_str(after);
 }
 
 #[cfg(test)]

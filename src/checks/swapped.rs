@@ -30,6 +30,7 @@ impl Check for Characters {
 /// Checks whether one or more words have been swapped in the given package name.
 pub struct Words {
     delimiters: Vec<char>,
+    delimiter_strs: Vec<String>,
     max_k: usize,
 }
 
@@ -39,6 +40,7 @@ impl Words {
     pub fn new(delimiters: &str) -> Self {
         Self {
             delimiters: delimiters.chars().collect(),
+            delimiter_strs: delimiters.chars().map(String::from).collect(),
             max_k: 5,
         }
     }
@@ -87,11 +89,18 @@ impl Check for Words {
             num_tokens
         };
 
-        for case in tokens.into_iter().permutations(k) {
-            for delimiter in self.delimiters.iter() {
-                let name_to_check = case.join(&format!("{delimiter}"));
-                if corpus.possible_squat(&name_to_check, name, package)? {
-                    squats.push(Squat::SwappedWords(name_to_check));
+        let mut buf = String::new();
+        for case in tokens.iter().permutations(k) {
+            for delimiter in self.delimiter_strs.iter() {
+                buf.clear();
+                for (i, token) in case.iter().enumerate() {
+                    if i > 0 {
+                        buf.push_str(delimiter);
+                    }
+                    buf.push_str(token);
+                }
+                if corpus.possible_squat(&buf, name, package)? {
+                    squats.push(Squat::SwappedWords(buf.clone()));
                 }
             }
         }
