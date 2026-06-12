@@ -2,7 +2,7 @@ use itertools::Itertools;
 
 use crate::Corpus;
 
-use super::{util, Check, Package, Squat};
+use super::{Check, Package, Squat};
 
 /// Checks whether a package only differs from a package in the corpus by repeating one character.
 pub struct Repeated;
@@ -19,7 +19,13 @@ impl Check for Repeated {
         let mut buf = String::new();
         for (i, (a, b)) in name.chars().tuple_windows().enumerate() {
             if a == b && a.is_ascii() {
-                util::rebuild_name_into(&mut buf, name, i, 2, &format!("{a}"));
+                let after = name.get(i + 2..).unwrap_or_default();
+                buf.clear();
+                buf.reserve(i + 1 + after.len());
+                buf.push_str(&name[..i]);
+                buf.push(a);
+                buf.push_str(after);
+
                 if corpus.possible_squat(&buf, name, package)? {
                     squats.push(Squat::RepeatedCharacter(buf.clone()));
                 }
