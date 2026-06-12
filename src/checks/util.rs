@@ -1,9 +1,3 @@
-pub(super) fn rebuild_name(orig: &str, index: usize, replace: usize, replacement: &str) -> String {
-    let mut buf = String::new();
-    rebuild_name_into(&mut buf, orig, index, replace, replacement);
-    buf
-}
-
 pub(super) fn rebuild_name_into(
     buf: &mut String,
     orig: &str,
@@ -22,6 +16,12 @@ pub(super) fn rebuild_name_into(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn rebuild_name(orig: &str, index: usize, replace: usize, replacement: &str) -> String {
+        let mut buf = String::new();
+        rebuild_name_into(&mut buf, orig, index, replace, replacement);
+        buf
+    }
 
     #[test]
     fn test_rebuild_name() {
