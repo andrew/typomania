@@ -17,7 +17,7 @@ impl Check for Repeated {
         let mut squats = Vec::new();
 
         let mut buf = String::new();
-        for (i, (a, b)) in name.chars().tuple_windows().enumerate() {
+        for ((i, a), (_, b)) in name.char_indices().tuple_windows() {
             if a == b && a.is_ascii() {
                 let after = name.get(i + 2..).unwrap_or_default();
                 buf.clear();
@@ -38,9 +38,18 @@ impl Check for Repeated {
 
 #[cfg(test)]
 mod tests {
-    use crate::checks::testutil::assert_check;
+    use proptest::prelude::*;
+
+    use crate::checks::testutil::{assert_check, assert_no_panic, name_strategy};
 
     use super::*;
+
+    proptest! {
+        #[test]
+        fn never_panics(name in name_strategy()) {
+            assert_no_panic(Repeated, &name);
+        }
+    }
 
     #[test]
     fn test_repeated() -> crate::Result<()> {
@@ -57,6 +66,8 @@ mod tests {
         test("abbbc", &["abbc"])?;
         test("abbbbc", &["abbbc"])?;
         test("aaaaaa", &["aaaaa"])?;
+        test("ۊۊ", &[])?;
+        test("ۊaaۊ", &["ۊaۊ"])?;
 
         Ok(())
     }

@@ -15,11 +15,12 @@ impl Check for Characters {
         let mut squats = Vec::new();
 
         let mut buf = String::new();
-        for (i, (a, b)) in name.chars().tuple_windows().enumerate() {
+        for ((i, a), (_, b)) in name.char_indices().tuple_windows() {
             if a != b {
-                let after = name.get(i + 2..).unwrap_or_default();
+                let len = a.len_utf8() + b.len_utf8();
+                let after = name.get(i + len..).unwrap_or_default();
                 buf.clear();
-                buf.reserve(i + 2 + after.len());
+                buf.reserve(i + len + after.len());
                 buf.push_str(&name[..i]);
                 buf.push(b);
                 buf.push(a);
@@ -117,9 +118,23 @@ impl Check for Words {
 
 #[cfg(test)]
 mod tests {
-    use crate::checks::testutil::assert_check;
+    use proptest::prelude::*;
+
+    use crate::checks::testutil::{assert_check, assert_no_panic, name_strategy};
 
     use super::*;
+
+    proptest! {
+        #[test]
+        fn characters_never_panics(name in name_strategy()) {
+            assert_no_panic(Characters, &name);
+        }
+
+        #[test]
+        fn words_never_panics(name in name_strategy()) {
+            assert_no_panic(Words::new("-_"), &name);
+        }
+    }
 
     #[test]
     fn test_characters() -> crate::Result<()> {
@@ -132,6 +147,7 @@ mod tests {
         test("a", &[])?;
         test("ab", &["ba"])?;
         test("abc", &["bac", "acb"])?;
+        test("aۊb", &["ۊab", "abۊ"])?;
 
         Ok(())
     }

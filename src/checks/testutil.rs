@@ -3,9 +3,14 @@ use std::{
     sync::RwLock,
 };
 
+use proptest::prelude::*;
+
 use crate::AuthorSet;
 
 use super::{Check, Corpus, Package};
+
+/// Upper bound on generated package name length, in bytes.
+const MAX_NAME_BYTES: usize = 128;
 
 #[derive(Debug, Clone, Default)]
 pub struct TestPackage {
@@ -120,4 +125,29 @@ where
     names.assert_contains_exactly(want);
 
     Ok(())
+}
+
+/// Generates arbitrary package names of up to [`MAX_NAME_BYTES`] bytes, never splitting a
+/// multi-byte character.
+pub(super) fn name_strategy() -> impl Strategy<Value = String> {
+    prop::collection::vec(any::<char>(), 0..=MAX_NAME_BYTES).prop_map(|chars| {
+        let mut name = String::with_capacity(MAX_NAME_BYTES);
+        for c in chars {
+            if name.len() + c.len_utf8() > MAX_NAME_BYTES {
+                break;
+            }
+            name.push(c);
+        }
+        name
+    })
+}
+
+/// Asserts that running `check` against `name` neither panics nor returns an error.
+#[track_caller]
+pub(super) fn assert_no_panic<C>(check: C, name: &str)
+where
+    C: Check,
+{
+    let names = NameTracker::new(name);
+    check.check(&names, name, &TestPackage::new(name)).unwrap();
 }
