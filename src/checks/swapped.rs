@@ -118,9 +118,23 @@ impl Check for Words {
 
 #[cfg(test)]
 mod tests {
-    use crate::checks::testutil::assert_check;
+    use proptest::prelude::*;
+
+    use crate::checks::testutil::{assert_check, assert_no_panic, name_strategy};
 
     use super::*;
+
+    proptest! {
+        #[test]
+        fn characters_never_panics(name in name_strategy()) {
+            assert_no_panic(Characters, &name);
+        }
+
+        #[test]
+        fn words_never_panics(name in name_strategy()) {
+            assert_no_panic(Words::new("-_"), &name);
+        }
+    }
 
     #[test]
     fn test_characters() -> crate::Result<()> {

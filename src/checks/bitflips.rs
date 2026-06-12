@@ -83,9 +83,18 @@ enum Error {
 
 #[cfg(test)]
 mod tests {
-    use crate::checks::testutil::assert_check;
+    use proptest::prelude::*;
+
+    use crate::checks::testutil::{assert_check, assert_no_panic, name_strategy};
 
     use super::*;
+
+    proptest! {
+        #[test]
+        fn never_panics(name in name_strategy()) {
+            assert_no_panic(Bitflips::new("abcdef", ["ab"].into_iter()), &name);
+        }
+    }
 
     #[test]
     fn test_bitflips() -> crate::Result<()> {

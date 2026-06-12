@@ -38,9 +38,18 @@ impl Check for Repeated {
 
 #[cfg(test)]
 mod tests {
-    use crate::checks::testutil::assert_check;
+    use proptest::prelude::*;
+
+    use crate::checks::testutil::{assert_check, assert_no_panic, name_strategy};
 
     use super::*;
+
+    proptest! {
+        #[test]
+        fn never_panics(name in name_strategy()) {
+            assert_no_panic(Repeated, &name);
+        }
+    }
 
     #[test]
     fn test_repeated() -> crate::Result<()> {

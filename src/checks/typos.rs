@@ -52,9 +52,19 @@ impl Check for Typos {
 
 #[cfg(test)]
 mod tests {
-    use crate::checks::testutil::assert_check;
+    use proptest::prelude::*;
+
+    use crate::checks::testutil::{assert_check, assert_no_panic, name_strategy};
 
     use super::*;
+
+    proptest! {
+        #[test]
+        fn never_panics(name in name_strategy()) {
+            let check = Typos::new([('a', vec![String::from("ab"), String::from("b")])].into_iter());
+            assert_no_panic(check, &name);
+        }
+    }
 
     #[test]
     fn test_typos() -> crate::Result<()> {

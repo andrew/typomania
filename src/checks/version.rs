@@ -30,9 +30,18 @@ impl Check for Version {
 
 #[cfg(test)]
 mod tests {
-    use crate::checks::testutil::assert_check;
+    use proptest::prelude::*;
+
+    use crate::checks::testutil::{assert_check, assert_no_panic, name_strategy};
 
     use super::*;
+
+    proptest! {
+        #[test]
+        fn never_panics(name in name_strategy()) {
+            assert_no_panic(Version, &name);
+        }
+    }
 
     #[test]
     fn test_version() -> crate::Result<()> {
