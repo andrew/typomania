@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-use super::{util, Check, Corpus, Package, Squat};
+use super::{Check, Corpus, Package, Squat};
 
 /// Checks whether one or more characters have been swapped in the given package name.
 pub struct Characters;
@@ -14,11 +14,19 @@ impl Check for Characters {
     ) -> crate::Result<Vec<Squat>> {
         let mut squats = Vec::new();
 
+        let mut buf = String::new();
         for (i, (a, b)) in name.chars().tuple_windows().enumerate() {
             if a != b {
-                let name_to_check = util::rebuild_name(name, i, 2, &format!("{b}{a}"));
-                if corpus.possible_squat(&name_to_check, name, package)? {
-                    squats.push(Squat::SwappedCharacters(name_to_check));
+                let after = name.get(i + 2..).unwrap_or_default();
+                buf.clear();
+                buf.reserve(i + 2 + after.len());
+                buf.push_str(&name[..i]);
+                buf.push(b);
+                buf.push(a);
+                buf.push_str(after);
+
+                if corpus.possible_squat(&buf, name, package)? {
+                    squats.push(Squat::SwappedCharacters(buf.clone()));
                 }
             }
         }
@@ -87,11 +95,18 @@ impl Check for Words {
             num_tokens
         };
 
-        for case in tokens.into_iter().permutations(k) {
+        let mut buf = String::new();
+        for case in tokens.iter().permutations(k) {
             for delimiter in self.delimiters.iter() {
-                let name_to_check = case.join(&format!("{delimiter}"));
-                if corpus.possible_squat(&name_to_check, name, package)? {
-                    squats.push(Squat::SwappedWords(name_to_check));
+                buf.clear();
+                for (i, token) in case.iter().enumerate() {
+                    if i > 0 {
+                        buf.push(*delimiter);
+                    }
+                    buf.push_str(token);
+                }
+                if corpus.possible_squat(&buf, name, package)? {
+                    squats.push(Squat::SwappedWords(buf.clone()));
                 }
             }
         }

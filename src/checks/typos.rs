@@ -33,13 +33,14 @@ impl Check for Typos {
         package: &dyn Package,
     ) -> crate::Result<Vec<Squat>> {
         let mut squats = Vec::new();
+        let mut buf = String::new();
 
         for (i, c) in name.chars().enumerate() {
             if let Some(typos) = self.typos.get(&c) {
                 for typo in typos.iter() {
-                    let name_to_check = util::rebuild_name(name, i, 1, typo);
-                    if corpus.possible_squat(&name_to_check, name, package)? {
-                        squats.push(Squat::Typo(name_to_check));
+                    util::rebuild_name_into(&mut buf, name, i, 1, typo);
+                    if corpus.possible_squat(&buf, name, package)? {
+                        squats.push(Squat::Typo(buf.clone()));
                     }
                 }
             }

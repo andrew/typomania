@@ -26,12 +26,13 @@ impl Check for Omitted {
         package: &dyn Package,
     ) -> crate::Result<Vec<Squat>> {
         let mut squats = Vec::new();
+        let mut buf = String::new();
 
         for i in 0..=name.len() {
             for c in self.alphabet.iter() {
-                let name_to_check = util::rebuild_name(name, i, 0, c);
-                if corpus.possible_squat(&name_to_check, name, package)? {
-                    squats.push(Squat::OmittedCharacter(name_to_check));
+                util::rebuild_name_into(&mut buf, name, i, 0, c);
+                if corpus.possible_squat(&buf, name, package)? {
+                    squats.push(Squat::OmittedCharacter(buf.clone()));
                 }
             }
         }
