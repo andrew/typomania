@@ -16,11 +16,12 @@ impl Check for Repeated {
     ) -> crate::Result<Vec<Squat>> {
         let mut squats = Vec::new();
 
+        let mut buf = String::new();
         for (i, (a, b)) in name.chars().tuple_windows().enumerate() {
             if a == b && a.is_ascii() {
-                let name_to_check = util::rebuild_name(name, i, 2, &format!("{a}"));
-                if corpus.possible_squat(&name_to_check, name, package)? {
-                    squats.push(Squat::RepeatedCharacter(name_to_check));
+                util::rebuild_name_into(&mut buf, name, i, 2, &format!("{a}"));
+                if corpus.possible_squat(&buf, name, package)? {
+                    squats.push(Squat::RepeatedCharacter(buf.clone()));
                 }
             }
         }
