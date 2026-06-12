@@ -90,13 +90,14 @@ impl Check for Homoglyph {
         package: &dyn Package,
     ) -> crate::Result<Vec<Squat>> {
         let mut squats = Vec::new();
+        let mut buf = String::new();
 
         for (i, c) in name.char_indices() {
             if let Some(glyphs) = self.glyphs.get(&c) {
                 for glyph in glyphs.iter() {
-                    let name_to_check = util::rebuild_name(name, i, c.len_utf8(), glyph);
-                    if corpus.possible_squat(&name_to_check, name, package)? {
-                        squats.push(Squat::Homoglyph(name_to_check));
+                    util::rebuild_name_into(&mut buf, name, i, c.len_utf8(), glyph);
+                    if corpus.possible_squat(&buf, name, package)? {
+                        squats.push(Squat::Homoglyph(buf.clone()));
                     }
                 }
             }
@@ -119,9 +120,18 @@ impl Check for Homoglyph {
 
 #[cfg(test)]
 mod tests {
-    use crate::checks::testutil::assert_check;
+    use proptest::prelude::*;
+
+    use crate::checks::testutil::{assert_check, assert_no_panic, name_strategy};
 
     use super::*;
+
+    proptest! {
+        #[test]
+        fn never_panics(name in name_strategy()) {
+            assert_no_panic(Homoglyph::default(), &name);
+        }
+    }
 
     #[test]
     fn test_homoglyph() -> crate::Result<()> {

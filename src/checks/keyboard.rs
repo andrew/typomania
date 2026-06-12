@@ -88,13 +88,14 @@ impl Check for KeyboardAdjacent {
         package: &dyn Package,
     ) -> crate::Result<Vec<Squat>> {
         let mut squats = Vec::new();
+        let mut buf = String::new();
 
         for (i, c) in name.char_indices() {
             if let Some(keys) = self.adjacent.get(&c) {
                 for key in keys.iter() {
-                    let name_to_check = util::rebuild_name(name, i, c.len_utf8(), key);
-                    if corpus.possible_squat(&name_to_check, name, package)? {
-                        squats.push(Squat::KeyboardAdjacent(name_to_check));
+                    util::rebuild_name_into(&mut buf, name, i, c.len_utf8(), key);
+                    if corpus.possible_squat(&buf, name, package)? {
+                        squats.push(Squat::KeyboardAdjacent(buf.clone()));
                     }
                 }
             }
@@ -106,9 +107,18 @@ impl Check for KeyboardAdjacent {
 
 #[cfg(test)]
 mod tests {
-    use crate::checks::testutil::assert_check;
+    use proptest::prelude::*;
+
+    use crate::checks::testutil::{assert_check, assert_no_panic, name_strategy};
 
     use super::*;
+
+    proptest! {
+        #[test]
+        fn never_panics(name in name_strategy()) {
+            assert_no_panic(KeyboardAdjacent::qwerty(), &name);
+        }
+    }
 
     #[test]
     fn test_keyboard_adjacent() -> crate::Result<()> {
