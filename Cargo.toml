@@ -20,9 +20,9 @@ default = ["rayon"]
 rayon = ["dep:rayon"]
 
 [dev-dependencies]
-clap = { version = "4.4.5", features = ["derive"] }
-criterion = "0.8"
-proptest = "1.1.0"
+clap = { version = "=4.6.1", features = ["derive"] }
+criterion = "=0.8.2"
+proptest = "=1.11.0"
 
 [[example]]
 name = "registry"
